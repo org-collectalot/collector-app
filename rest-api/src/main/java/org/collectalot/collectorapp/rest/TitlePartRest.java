@@ -1,7 +1,9 @@
 package org.collectalot.collectorapp.rest;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -30,16 +32,31 @@ public class TitlePartRest {
     public TitlePart[] getTitlePartByParent (@QueryParam("parent") Long parentId)
     {
 		if(parentId == null) {
-			throw new IllegalArgumentException("A parent id must be provided");
+			return tpBackend.getAllTitleParts();
+		} else {
+			return tpBackend.getAllTitleParts(parentId);
 		}
-		return tpBackend.getAllTitleParts(parentId);
     }
 	
 	@PUT
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public void saveTitlePart(TitlePart tp) {
-		System.out.println("saving titlepart with id: " + tp.getId());
-		tpBackend.saveTitlePart(tp);
+    @Produces(MediaType.APPLICATION_JSON)
+	public TitlePart saveTitlePart(TitlePart tp) {
+		return tpBackend.saveTitlePart(tp);
 	}
+	
+	@POST
+	@Path("/")
+	@Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+	public TitlePart addTitlePart(TitlePart tp) {
+		return tpBackend.addTitlePart(tp);
+	}
+	@DELETE
+    @Path("/{id}")
+    public void delete (@PathParam("id") Long id)
+    {
+		tpBackend.deleteTitlePart(id);
+    }
 }

@@ -16,6 +16,10 @@ public class TitlePartDBBackend {
  */
 //    @Inject
 //    PersistenceHelper helper;
+    public TitlePart[] getAllTitleParts() {
+    	EntityManager em = emf.createEntityManager();
+        return em.createNamedQuery("TitlePart.findAllNoParent", TitlePart.class).getResultList().toArray(new TitlePart[0]);
+    }
     public TitlePart[] getAllTitleParts(long parentId) {
     	EntityManager em = emf.createEntityManager();
         return em.createNamedQuery("TitlePart.findAll", TitlePart.class).setParameter("parentId", parentId).getResultList().toArray(new TitlePart[0]);
@@ -25,13 +29,28 @@ public class TitlePartDBBackend {
     	return em.createNamedQuery("TitlePart.find", TitlePart.class).setParameter("id", id).getSingleResult();
     }
     @Transactional
-    public void saveTitlePart(TitlePart tp) {
+    public TitlePart saveTitlePart(TitlePart tp) {
     	EntityManager em = emf.createEntityManager();
-    	TitlePart tpPersist = em.find(TitlePart.class, tp.getId());
-    	tpPersist.setText(tp.getText());
-    	em.persist(tpPersist);
+
+    	//merge will also check @Version number.
+    	//see TitlePart implementation
+    	return em.merge(tp);
+    }
+    @Transactional
+    public TitlePart addTitlePart(TitlePart tp) {
+    	EntityManager em = emf.createEntityManager();
+    	em.persist(tp);
+    	return tp;
+    }
+    @Transactional
+    public void deleteTitlePart(Long id) {
+    	EntityManager em = emf.createEntityManager();
+    	TitlePart tpDelete = em.find(TitlePart.class, id);
+    	tpDelete.setDeleted(true);
     }
     @PersistenceUnit
     private EntityManagerFactory emf;
-
+//    TODO: Der er sået tvivl om nedenstående er thread safe. Undersøg nærmere.
+//    @PersistenceContext
+//    private EntityManager em;
 }
