@@ -1,0 +1,1 @@
+run with mvn wildfly-swarm:run
