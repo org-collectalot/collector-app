@@ -1,6 +1,5 @@
 package org.collectalot.collectorapp.db;
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
@@ -11,11 +10,6 @@ import org.collectalot.collectorapp.model.TitlePart;
 
 @ApplicationScoped
 public class TitlePartDBBackend {
-/*
- *TODO use @ApplicationScoped hvis du vil referere egne beans 
- */
-//    @Inject
-//    PersistenceHelper helper;
     public TitlePart[] getAllTitleParts() {
     	EntityManager em = emf.createEntityManager();
         return em.createNamedQuery("TitlePart.findAllNoParent", TitlePart.class).getResultList().toArray(new TitlePart[0]);
