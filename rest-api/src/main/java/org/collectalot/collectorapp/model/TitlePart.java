@@ -26,10 +26,10 @@ import javax.xml.bind.annotation.XmlTransient;
         @NamedQuery(name = "TitlePart.find", query = "SELECT tp FROM TitlePart tp WHERE tp.id = :id AND tp.deleted = FALSE AND tp.user.id = :uid")
 })
 @XmlRootElement
-@SequenceGenerator(name="seq", initialValue=20)//TODO kan man slippe af med seq 20 som start
+@SequenceGenerator(name="title-part-seq", initialValue=20)//TODO kan man slippe af med seq 20 som start
 public class TitlePart implements Serializable {
     @Id
-    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="seq")
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="title-part-seq")
     private Long id;
     
     @Column(name="PARENT_ID")

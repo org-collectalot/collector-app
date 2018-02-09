@@ -14,10 +14,10 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "USER")
-@SequenceGenerator(name="seq", initialValue=20)//TODO kan man slippe af med seq 20 som start
+@SequenceGenerator(name="user-seq", initialValue=20)//TODO kan man slippe af med seq 20 som start
 public class User {
     @Id
-    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="seq")
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="user-seq")
     private Long id;
 	private String name;
 
