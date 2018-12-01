@@ -1,5 +1,7 @@
 package org.collectalot.collectorapp.rest;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -9,23 +11,33 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.collectalot.collectorapp.db.TitlePartDBBackend;
 import org.collectalot.collectorapp.model.TitlePart;
+import org.collectalot.collectorapp.model.User;
+import org.collectalot.collectorapp.security.RestServiceAccessFilter;
 @Path("/title-part")
 public class TitlePartRest {
 	@Inject
 	TitlePartDBBackend tpBackend;
+	
+	public TitlePartRest() {
+	}
+	public TitlePartRest(TitlePartDBBackend tpBackend) {
+		this.tpBackend = tpBackend;
+	}
+	
 
 	@GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public TitlePart getTitlePart (@PathParam("id") Long id)
+    public TitlePart getTitlePart (@Context HttpServletRequest httpServletRequest, @PathParam("id") Long id)
     {
-		return tpBackend.getTitlePart(id);
+		return tpBackend.getTitlePart(getUser(httpServletRequest), id);
     }
-
+/*
 	@GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -58,5 +70,12 @@ public class TitlePartRest {
     public void delete (@PathParam("id") Long id)
     {
 		tpBackend.deleteTitlePart(id);
-    }
+    }*/
+	private User getUser(HttpServletRequest req) {
+		try {
+			return (User) req.getAttribute(RestServiceAccessFilter.USER_LOGGED_ON);
+		} catch(NullPointerException e) {
+			throw new IllegalAccessError("Tried to access service with no user logged on.");
+		}
+	}
 }

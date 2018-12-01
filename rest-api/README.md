@@ -1,1 +1,2 @@
-run with mvn wildfly-swarm:run
+run with mvn thorntail:run
+
