@@ -33,22 +33,30 @@ public class TitlePartRest {
 	@GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public TitlePart getTitlePart (@Context HttpServletRequest httpServletRequest, @PathParam("id") Long id)
+	public TitlePart getTitlePart (@Context HttpServletRequest httpServletRequest, 
+	                               @PathParam("id") Long id)
     {
 		return tpBackend.getTitlePart(getUser(httpServletRequest), id);
     }
-/*
+
 	@GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-    public TitlePart[] getTitlePartByParent (@QueryParam("parent") Long parentId)
+	public TitlePart[] getTitlePartByParent (@Context HttpServletRequest httpServletRequest, 
+	                                         @QueryParam("parent") Long parentId)
     {
+		TitlePart[] tps = null;
 		if(parentId == null) {
-			return tpBackend.getAllTitleParts();
+			tps = tpBackend.getAllTitleParts(getUser(httpServletRequest));
 		} else {
-			return tpBackend.getAllTitleParts(parentId);
+			tps = tpBackend.getAllTitleParts(getUser(httpServletRequest), parentId);
 		}
+		if (tps == null) {
+			tps = new TitlePart[]{};
+		}
+		return tps;
     }
+/*
 	
 	@PUT
 	@Path("/")

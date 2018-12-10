@@ -1,6 +1,5 @@
 package org.collectalot.collectorapp.security;
 
-import javax.enterprise.inject.Default;
 import javax.servlet.http.HttpServletRequest;
 
 import org.collectalot.collectorapp.model.User;
