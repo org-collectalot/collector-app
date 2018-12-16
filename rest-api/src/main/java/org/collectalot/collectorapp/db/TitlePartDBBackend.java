@@ -3,6 +3,7 @@ import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
+import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
@@ -35,17 +36,50 @@ public class TitlePartDBBackend {
         } else {
         	throw new IllegalStateException("Too many items found.");
         }
-    }
+	}
+	/**
+	 * Save a titlePart. If it already exists, update it.
+	 * If it doesn't exist, try to create it.
+	 * 
+	 * @param user The user logged on to the system
+	 * @param tp The title part to save
+	 * @return The saved titlepart with updated values.
+	 */
     @Transactional
     public TitlePart saveTitlePart(User user, TitlePart tp) {
     	tp.setUser(user);
     	//merge will also check @Version number.
-    	//see TitlePart implementation
-    	return em.merge(tp);
-    }
+		//see TitlePart implementation
+		try {
+			List<TitlePart> titleParts = em.createNamedQuery("TitlePart.find", TitlePart.class)
+			                               .setParameter("id", tp.getId())
+			                               .setParameter("uid", user.getId())
+			                               .getResultList();
+			if (titleParts.size() == 1) {
+				if(titleParts.get(0).isDeleted()) {
+					throw new IllegalArgumentException("object already deleted. No updates allowed.");
+				}
+				return em.merge(tp);
+			} else if(titleParts.size() == 0) { 
+				return addTitlePart(user, tp);
+			} else {
+				throw new IllegalStateException("Too many items found.");
+			}
+		} catch(OptimisticLockException e) {
+			throw new IllegalArgumentException("Version number " + tp.getVersion() + " doesn't correspond to database.");
+		}
+	}
+	/**
+	 * Try to create a new title-part.
+	 * 
+	 * //TODO fail if title-part path already exists?
+	 * @param user
+	 * @param tp
+	 * @return
+	 */
     @Transactional
     public TitlePart addTitlePart(User user, TitlePart tp) {
-    	User userLoggedOn = em.find(User.class, user);
+		User userLoggedOn = em.find(User.class, user.getId());
     	tp.setUser(userLoggedOn);
     	em.persist(tp);
     	return tp;

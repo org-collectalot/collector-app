@@ -5,14 +5,11 @@ import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -26,10 +23,8 @@ import javax.xml.bind.annotation.XmlTransient;
         @NamedQuery(name = "TitlePart.find", query = "SELECT tp FROM TitlePart tp WHERE tp.id = :id AND tp.deleted = FALSE AND tp.user.id = :uid")
 })
 @XmlRootElement
-@SequenceGenerator(name="title-part-seq", initialValue=20)//TODO kan man slippe af med seq 20 som start
 public class TitlePart implements Serializable {
     @Id
-    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="title-part-seq")
     private Long id;
     
     @Column(name="PARENT_ID")

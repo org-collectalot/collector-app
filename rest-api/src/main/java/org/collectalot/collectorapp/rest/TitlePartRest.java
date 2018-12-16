@@ -2,6 +2,7 @@ package org.collectalot.collectorapp.rest;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -56,15 +57,24 @@ public class TitlePartRest {
 		}
 		return tps;
     }
-/*
 	
 	@PUT
-	@Path("/")
+	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-	public TitlePart saveTitlePart(TitlePart tp) {
-		return tpBackend.saveTitlePart(tp);
+	public TitlePart saveTitlePart(@Context HttpServletRequest httpServletRequest,
+	                               @Context HttpServletResponse httpServletResponse,
+	                               @PathParam("id") Long id,
+	                               TitlePart tp) {
+		tp.setId(id);
+		try {
+			return tpBackend.saveTitlePart(getUser(httpServletRequest), tp);
+		} catch(IllegalArgumentException e) {
+			e.printStackTrace();
+			throw new BadRequestException(e.getMessage());
+		}
 	}
+/*
 	
 	@POST
 	@Path("/")
