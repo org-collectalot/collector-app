@@ -5,11 +5,13 @@ import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -25,6 +27,8 @@ import javax.xml.bind.annotation.XmlTransient;
 @XmlRootElement
 public class TitlePart implements Serializable {
     @Id
+    @GeneratedValue(generator="tp_gen")
+    @SequenceGenerator(initialValue=20, name="tp_gen")//TODO kan vi vælge en anden værdi til initial value? Måske ved at indsætte explicit via JPA under test i stedet for load.sql?
     private Long id;
     
     @Column(name="PARENT_ID")

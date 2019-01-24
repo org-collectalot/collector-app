@@ -17,9 +17,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.collectalot.collectorapp.db.TitlePartDBBackend;
 import org.collectalot.collectorapp.model.TitlePart;
-import org.collectalot.collectorapp.model.User;
 import org.collectalot.collectorapp.security.PreferredUserSessionResolver;
-import org.collectalot.collectorapp.security.RestServiceAccessFilter;
 import org.collectalot.collectorapp.security.UserSessionResolver;
 
 @Path("/title-part")
@@ -81,19 +79,21 @@ public class TitlePartRest {
 			throw new BadRequestException(e.getMessage());
 		}
 	}
-/*
 	
 	@POST
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-	public TitlePart addTitlePart(TitlePart tp) {
-		return tpBackend.addTitlePart(tp);
+	public TitlePart addTitlePart(@Context HttpServletRequest httpServletRequest,
+			                      TitlePart tp) {
+		return tpBackend.addTitlePart(userSessionResolver.getUserLoggedOn(httpServletRequest), tp);
 	}
+	
 	@DELETE
     @Path("/{id}")
-    public void delete (@PathParam("id") Long id)
+    public void delete (@Context HttpServletRequest httpServletRequest,
+                        @PathParam("id") Long id)
     {
-		tpBackend.deleteTitlePart(id);
-    }*/
+		tpBackend.deleteTitlePart(userSessionResolver.getUserLoggedOn(httpServletRequest),id);
+    }
 }

@@ -23,7 +23,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 //import org.wildfly.swarm.arquillian.DefaultDeployment;
-
+/*
+ * TODO
+ * Need to be able to run tests independently. Look at DBUnit or the like to reset db
+ * between each invocation.
+ * 
+ * 
+ * */
 @RunWith(Arquillian.class)
 public class TitlePartRestIntegrationTest {
 
@@ -39,6 +45,17 @@ public class TitlePartRestIntegrationTest {
         Assert.assertEquals(200, response.getStatus());
         String replyString = response.readEntity(String.class);
         assertEquals("{\"id\":2,\"parentId\":null,\"text\":\"Lucky Luke\",\"version\":1,\"deleted\":false}", replyString);
+    }
+    @Test
+    @RunAsClient
+    public void testGetDeletedTitlePart() {
+        Client client = ClientBuilder.newClient();
+        //test finding an item
+        WebTarget target = client.target("http://localhost:8080")
+                .path("rest").path("title-part").path("1");
+
+        Response response = target.request(MediaType.APPLICATION_JSON).get();
+        Assert.assertEquals(204, response.getStatus());
     }
     @Test
     @RunAsClient
@@ -95,6 +112,26 @@ public class TitlePartRestIntegrationTest {
         Assert.assertEquals(200, response.getStatus());
         Assert.assertEquals(2, tpUpdated.getVersion());
     }
+    
+    @Test
+    @RunAsClient
+    public void testPutNewTitlePart() {
+        Client client = ClientBuilder.newClient();
+        //test updating an item, which exists, but with wrong version number
+        WebTarget target = client.target("http://localhost:8080")
+                .path("rest").path("title-part").path("40");
+        
+        TitlePart tpNew = new TitlePart();
+        tpNew.setParentId(null);
+        tpNew.setText("New Title");
+        tpNew.setVersion(1);
+        tpNew.setDeleted(false);
+
+        Invocation.Builder invocationBuilder = target.request(MediaType.APPLICATION_JSON);
+        Response response =
+            invocationBuilder.put(Entity.entity(tpNew, MediaType.APPLICATION_JSON));
+        Assert.assertEquals(400, response.getStatus());
+    }
 
     @Test
     @RunAsClient
@@ -138,9 +175,44 @@ public class TitlePartRestIntegrationTest {
             invocationBuilder.put(Entity.entity(tpUpdated, MediaType.APPLICATION_JSON));
         Assert.assertEquals(400, response.getStatus());
     }
-    //do a put with a non existing id
-    //do a put with no id at all
-    //test that you cannot get a deleted titlepart
+    
+    @Test
+    @RunAsClient
+    public void testCreateTitlePart() {
+        Client client = ClientBuilder.newClient();
+        WebTarget target = client.target("http://localhost:8080")
+                .path("rest").path("title-part");
+        //test with no parent
+        TitlePart newTp = new TitlePart();
+        newTp.setParentId(null);
+        newTp.setText("Some new title");
+
+        Invocation.Builder invocationBuilder = target.request(MediaType.APPLICATION_JSON);
+        Response response =
+            invocationBuilder.post(Entity.entity(newTp, MediaType.APPLICATION_JSON));
+        Assert.assertEquals(200, response.getStatus());
+        TitlePart tpResponse = response.readEntity(TitlePart.class);
+        assertEquals(new Long(20), tpResponse.getId());
+        assertEquals(0, tpResponse.getVersion());
+        assertEquals(false, tpResponse.isDeleted());
+        assertEquals("Some new title", tpResponse.getText());
+        assertEquals(null, tpResponse.getParentId());
+        
+        //test with a parent
+        newTp = new TitlePart();
+        newTp.setParentId(1L);
+        newTp.setText("Some new child title");
+
+        response =
+            invocationBuilder.post(Entity.entity(newTp, MediaType.APPLICATION_JSON));
+        Assert.assertEquals(200, response.getStatus());
+        tpResponse = response.readEntity(TitlePart.class);
+        assertEquals(new Long(21), tpResponse.getId());
+        assertEquals(0, tpResponse.getVersion());
+        assertEquals(false, tpResponse.isDeleted());
+        assertEquals("Some new child title", tpResponse.getText());
+        assertEquals(new Long(1), tpResponse.getParentId());
+    }
 
     @Deployment
     public static Archive<?> createTestArchive() {

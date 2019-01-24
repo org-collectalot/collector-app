@@ -29,9 +29,11 @@ public class TitlePartDBBackend {
     		   .setParameter("id", id)
     		   .setParameter("uid", user.getId())
     		   .getResultList();
-    	if (titleParts.size() == 1) {
+    	if (titleParts.size() == 1 && !titleParts.get(0).isDeleted()) {
     		return titleParts.get(0);
-    	} else if(titleParts.size() == 0) { 
+    	} else if (titleParts.size() == 1 && titleParts.get(0).isDeleted()) {
+    		return null;
+    	} else if(titleParts.size() == 0) {
     		return null;
         } else {
         	throw new IllegalStateException("Too many items found.");
@@ -61,7 +63,7 @@ public class TitlePartDBBackend {
 				}
 				return em.merge(tp);
 			} else if(titleParts.size() == 0) { 
-				return addTitlePart(user, tp);
+				throw new IllegalArgumentException("Can't update a non existing titlepart.");
 			} else {
 				throw new IllegalStateException("Too many items found.");
 			}
@@ -81,6 +83,7 @@ public class TitlePartDBBackend {
     public TitlePart addTitlePart(User user, TitlePart tp) {
 		User userLoggedOn = em.find(User.class, user.getId());
     	tp.setUser(userLoggedOn);
+    	tp.setId(null);
     	em.persist(tp);
     	return tp;
     }
