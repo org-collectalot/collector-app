@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.XmlTransient;
 @NamedQueries({
         @NamedQuery(name = "TitlePart.findAllNoParent", query = "SELECT tp FROM TitlePart tp WHERE tp.parentId is null AND tp.deleted = FALSE AND tp.user.id = :uid"),
         @NamedQuery(name = "TitlePart.findAll", query = "SELECT tp FROM TitlePart tp WHERE tp.parentId = :parentId AND tp.deleted = FALSE AND tp.user.id = :uid"),
-        @NamedQuery(name = "TitlePart.find", query = "SELECT tp FROM TitlePart tp WHERE tp.id = :id AND tp.deleted = FALSE AND tp.user.id = :uid")
+        @NamedQuery(name = "TitlePart.find", query = "SELECT tp FROM TitlePart tp WHERE tp.id = :id AND tp.user.id = :uid")
 })
 @XmlRootElement
 public class TitlePart implements Serializable {

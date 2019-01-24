@@ -18,39 +18,48 @@ import javax.ws.rs.core.MediaType;
 import org.collectalot.collectorapp.db.TitlePartDBBackend;
 import org.collectalot.collectorapp.model.TitlePart;
 import org.collectalot.collectorapp.model.User;
+import org.collectalot.collectorapp.security.PreferredUserSessionResolver;
 import org.collectalot.collectorapp.security.RestServiceAccessFilter;
+import org.collectalot.collectorapp.security.UserSessionResolver;
+
 @Path("/title-part")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class TitlePartRest {
 	@Inject
 	TitlePartDBBackend tpBackend;
 	
+	@Inject @PreferredUserSessionResolver
+	UserSessionResolver userSessionResolver;
+	
 	public TitlePartRest() {
+		
 	}
-	public TitlePartRest(TitlePartDBBackend tpBackend) {
+
+	public TitlePartRest(TitlePartDBBackend tpBackend, UserSessionResolver userSessionResolver) {
 		this.tpBackend = tpBackend;
+		this.userSessionResolver = userSessionResolver;
 	}
 	
 
 	@GET
     @Path("/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
 	public TitlePart getTitlePart (@Context HttpServletRequest httpServletRequest, 
 	                               @PathParam("id") Long id)
     {
-		return tpBackend.getTitlePart(getUser(httpServletRequest), id);
+		return tpBackend.getTitlePart(userSessionResolver.getUserLoggedOn(httpServletRequest), id);
     }
 
 	@GET
     @Path("/")
-    @Produces(MediaType.APPLICATION_JSON)
 	public TitlePart[] getTitlePartByParent (@Context HttpServletRequest httpServletRequest, 
 	                                         @QueryParam("parent") Long parentId)
     {
 		TitlePart[] tps = null;
 		if(parentId == null) {
-			tps = tpBackend.getAllTitleParts(getUser(httpServletRequest));
+			tps = tpBackend.getAllTitleParts(userSessionResolver.getUserLoggedOn(httpServletRequest));
 		} else {
-			tps = tpBackend.getAllTitleParts(getUser(httpServletRequest), parentId);
+			tps = tpBackend.getAllTitleParts(userSessionResolver.getUserLoggedOn(httpServletRequest), parentId);
 		}
 		if (tps == null) {
 			tps = new TitlePart[]{};
@@ -60,15 +69,13 @@ public class TitlePartRest {
 	
 	@PUT
 	@Path("/{id}")
-	@Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
 	public TitlePart saveTitlePart(@Context HttpServletRequest httpServletRequest,
 	                               @Context HttpServletResponse httpServletResponse,
 	                               @PathParam("id") Long id,
 	                               TitlePart tp) {
 		tp.setId(id);
 		try {
-			return tpBackend.saveTitlePart(getUser(httpServletRequest), tp);
+			return tpBackend.saveTitlePart(userSessionResolver.getUserLoggedOn(httpServletRequest), tp);
 		} catch(IllegalArgumentException e) {
 			e.printStackTrace();
 			throw new BadRequestException(e.getMessage());
@@ -89,11 +96,4 @@ public class TitlePartRest {
     {
 		tpBackend.deleteTitlePart(id);
     }*/
-	private User getUser(HttpServletRequest req) {
-		try {
-			return (User) req.getAttribute(RestServiceAccessFilter.USER_LOGGED_ON);
-		} catch(NullPointerException e) {
-			throw new IllegalAccessError("Tried to access service with no user logged on.");
-		}
-	}
 }

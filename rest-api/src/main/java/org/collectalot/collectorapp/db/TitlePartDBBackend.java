@@ -1,6 +1,6 @@
 package org.collectalot.collectorapp.db;
-import java.util.List;
 
+import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
 import javax.persistence.OptimisticLockException;

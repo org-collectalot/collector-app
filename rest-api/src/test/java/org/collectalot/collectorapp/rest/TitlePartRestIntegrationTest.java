@@ -117,9 +117,30 @@ public class TitlePartRestIntegrationTest {
         Assert.assertEquals(400, response.getStatus());
     }
 
-    //do a put on a deleted titlepart
+    @Test
+    @RunAsClient
+    public void testPutDeletedTitlePart() {
+        //do a put on a deleted titlepart
+        Client client = ClientBuilder.newClient();
+        //test updating an item, which exists
+        WebTarget target = client.target("http://localhost:8080")
+                .path("rest").path("title-part").path("1");
+        
+        TitlePart tpUpdated = new TitlePart();
+        tpUpdated.setId(1L);
+        tpUpdated.setParentId(null);
+        tpUpdated.setText("Four Color (not deleted)");
+        tpUpdated.setVersion(1);
+        tpUpdated.setDeleted(false);
+
+        Invocation.Builder invocationBuilder = target.request(MediaType.APPLICATION_JSON);
+        Response response =
+            invocationBuilder.put(Entity.entity(tpUpdated, MediaType.APPLICATION_JSON));
+        Assert.assertEquals(400, response.getStatus());
+    }
     //do a put with a non existing id
     //do a put with no id at all
+    //test that you cannot get a deleted titlepart
 
     @Deployment
     public static Archive<?> createTestArchive() {

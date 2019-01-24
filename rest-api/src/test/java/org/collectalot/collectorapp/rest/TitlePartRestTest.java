@@ -4,20 +4,24 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.collectalot.collectorapp.db.TitlePartDBBackend;
 import org.collectalot.collectorapp.model.TitlePart;
 import org.collectalot.collectorapp.model.User;
 import org.collectalot.collectorapp.security.RestServiceAccessFilter;
+import org.collectalot.collectorapp.security.UserSessionResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class TitlePartRestTest {
     private TitlePartDBBackend dbMock;
+    private UserSessionResolver usrSessResolvMock;
     private TitlePartRest tpRest;
     private HttpServletRequest httpReqMockWithUser0;
 	private HttpServletRequest httpReqMockWithNoUser;
 	private HttpServletRequest httpReqMockWithInvalidUser;//TODO also test for invalid users
+	private HttpServletResponse httpServletResponse;
 	
 	//defined objects to test for
 	TitlePart tp0 = new TitlePart();
@@ -45,13 +49,22 @@ class TitlePartRestTest {
 		when(dbMock.getAllTitleParts(user)).thenReturn(tps0);
 		when(dbMock.getAllTitleParts(user, 1L)).thenReturn(new TitlePart[]{});
 		when(dbMock.getAllTitleParts(user, 2L)).thenReturn(tps1);
-		tpRest = new TitlePartRest(dbMock);
+		when(dbMock.saveTitlePart(user, tp0)).thenReturn(tp0);
+
 		
 		httpReqMockWithUser0 = mock(HttpServletRequest.class);
-		when(httpReqMockWithUser0.getAttribute(RestServiceAccessFilter.USER_LOGGED_ON)).thenReturn(user);
+		httpReqMockWithNoUser = mock(HttpServletRequest.class);
+
+		usrSessResolvMock = mock(UserSessionResolver.class);
+		when(usrSessResolvMock.getUserLoggedOn(httpReqMockWithUser0)).thenReturn(user);
+		when(usrSessResolvMock.getUserLoggedOn(httpReqMockWithNoUser)).thenThrow(new IllegalAccessError());
+		
+		tpRest = new TitlePartRest(dbMock, usrSessResolvMock);
+		
+		httpServletResponse = mock(HttpServletResponse.class);
 	}
 	@Test
-	void testGetByIdUser0() {
+	void testGetTitlePart_User0() {
 		//get a titlepart successfully
 		TitlePart tp = tpRest.getTitlePart(httpReqMockWithUser0,1L);
 		assertSame(1L, tp.getId());
@@ -69,7 +82,7 @@ class TitlePartRestTest {
 		}
 	}
 	@Test
-	void testGetTitlePartByParentUser0() {
+	void testGetTitlePartByParent_User0() {
 		//get a list of titleparts with no parent successfully
 		TitlePart[] tps = tpRest.getTitlePartByParent(httpReqMockWithUser0, null);
 		assertArrayEquals(tps0, tps);
@@ -95,5 +108,11 @@ class TitlePartRestTest {
 		} catch(IllegalAccessError e) {
 			assertTrue(true, "exception thrown as expected");
 		}
+	}
+	@Test
+	void testSaveTitlePart_User0() {
+		TitlePart retTp = tpRest.saveTitlePart(httpReqMockWithUser0, httpServletResponse, 123L, tp0);
+		verify(dbMock, times(1)).saveTitlePart(usrSessResolvMock.getUserLoggedOn(httpReqMockWithUser0), tp0);
+		assertSame(123L, retTp.getId());
 	}
 }
